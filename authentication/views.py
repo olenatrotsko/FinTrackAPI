@@ -1,4 +1,8 @@
+import os
+import jwt
+
 from django.urls import reverse
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
 from rest_framework import generics, status
@@ -33,7 +37,21 @@ class RegisterView(generics.GenericAPIView):
 
         return Response(user_data, status=status.HTTP_201_CREATED)
     
-    
+
 class VerifyEmail(generics.GenericAPIView):
-    def get(self):
-        pass
+    def get(self, request):
+        token = request.GET.get('token')
+        try:
+            payload = jwt.decode(token, os.environ.get('SECRET_KEY'), algorithms=['HS256'])
+            user = User.objects.get(id=payload['user_id'])
+            if not user.is_verified:
+                user.is_verified = True
+                user.save()
+
+            return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
+
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Activation link expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+            
