@@ -38,7 +38,7 @@ class RegisterView(generics.GenericAPIView):
         return Response(user_data, status=status.HTTP_201_CREATED)
     
 
-class VerifyEmail(views.APIView):
+class VerifyEmail(generics.GenericAPIView):
     serializer_class = EmailSerializer
 
     def get(self, request):
