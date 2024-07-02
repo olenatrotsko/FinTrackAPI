@@ -6,6 +6,7 @@ class BaseAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ['id', 'name', 'currency', 'balance', 'is_main']
+        read_only_fields = ['id']
 
     def validate_name(self, name):
         user = self.context['request'].user
@@ -17,7 +18,7 @@ class BaseAccountSerializer(serializers.ModelSerializer):
 class CreateAccountSerializer(BaseAccountSerializer):
     class Meta:
         model = Account
-        fields = ['name', 'currency', 'balance', 'is_main']
+        fields = ['id', 'name', 'currency', 'balance', 'is_main']
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
