@@ -1,6 +1,7 @@
 from django.db import models
 
 from accounts.models import Account
+from authentication.models import User
 from categories.models import Category
 
 class Transaction(models.Model):
@@ -14,6 +15,7 @@ class Transaction(models.Model):
     type = models.CharField(max_length=8, choices=CATEGORY_TYPES, blank=False, null=False)
     description = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     account = models.ForeignKey(to=Account, on_delete=models.CASCADE)
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE)
     
