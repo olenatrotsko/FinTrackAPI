@@ -10,11 +10,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from authentication.serializers import LoginSerializer, RegisterSerializer, EmailSerializer
+from authentication.renderers import UserRenderer
 from authentication.models import User
 from authentication.utils import Util
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
+    renderer_classes = (UserRenderer, )
 
     def post(self, request):
         user = request.data
@@ -40,6 +42,7 @@ class RegisterView(generics.GenericAPIView):
 
 class VerifyEmail(generics.GenericAPIView):
     serializer_class = EmailSerializer
+    renderer_classes = (UserRenderer, )
 
     def get(self, request):
         token = request.GET.get('token')
@@ -60,6 +63,7 @@ class VerifyEmail(generics.GenericAPIView):
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
+    renderer_classes = (UserRenderer, )
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
