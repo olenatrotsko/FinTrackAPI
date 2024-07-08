@@ -12,7 +12,7 @@ from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from authentication.serializers import LoginSerializer, RegisterSerializer, EmailSerializer, RequestResetPasswordEmailSerializer
+from authentication.serializers import LoginSerializer, RegisterSerializer, EmailSerializer, RequestResetPasswordEmailSerializer, SetNewPasswordSerializer
 from authentication.renderers import UserRenderer
 from authentication.models import User
 from authentication.utils import Util
@@ -75,7 +75,7 @@ class LoginView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RequestPasswordResetEmail(generics.GenericAPIView):
+class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
     serializer_class = RequestResetPasswordEmailSerializer
 
     def post(self, request):
@@ -115,4 +115,11 @@ class PasswordTokenCheckAPIView(generics.GenericAPIView):
             return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
         
 
-
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+    
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
+    
