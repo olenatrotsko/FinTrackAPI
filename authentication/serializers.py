@@ -1,8 +1,10 @@
 from django.contrib import auth
+
 from rest_framework import serializers
 from rest_framework import exceptions
 
 from authentication.models import User
+from authentication.utils import Util
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -69,3 +71,10 @@ class LoginSerializer(serializers.ModelSerializer):
             'email': user.email,
             'tokens': user.get_tokens()
         }
+
+class RequestResetPasswordEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(min_length=2)
+
+    class Meta:
+        fields = ['email']
+    
