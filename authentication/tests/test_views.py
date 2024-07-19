@@ -19,7 +19,6 @@ class TestViews(TestSetup):
 
     def test_user_can_login_after_verification(self):
         response = self.client.post(self.register_url, self.user_data, format='json')
-        # import pdb; pdb.set_trace()
         email = response.data['email']
         user = User.objects.get(email=email)
         user.is_verified = True
