@@ -5,6 +5,7 @@ from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnico
 
 from rest_framework import serializers
 from rest_framework import exceptions
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from authentication.models import User
 from authentication.utils import Util
@@ -109,3 +110,20 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
         except Exception as e:
             raise exceptions.AuthenticationFailed('The reset link is invalid', 401)
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    default_error_messages = {
+        'bad_token': ('Token is blacklisted, please login again')
+    }
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+    
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')

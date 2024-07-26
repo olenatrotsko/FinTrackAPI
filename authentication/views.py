@@ -8,11 +8,11 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 
-from rest_framework import generics, status, views
+from rest_framework import generics, status, views, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from authentication.serializers import LoginSerializer, RegisterSerializer, EmailSerializer, RequestResetPasswordEmailSerializer, SetNewPasswordSerializer
+from authentication.serializers import LoginSerializer, LogoutSerializer, RegisterSerializer, EmailSerializer, RequestResetPasswordEmailSerializer, SetNewPasswordSerializer
 from authentication.renderers import UserRenderer
 from authentication.models import User
 from authentication.utils import Util
@@ -122,4 +122,15 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
+    
+
+class LogoutAPIView(views.APIView):
+    serializer_class = LogoutSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'success': 'Successfully logged out'}, status=status.HTTP_204_NO_CONTENT)
     
