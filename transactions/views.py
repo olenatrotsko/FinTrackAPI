@@ -1,5 +1,7 @@
 from decimal import Decimal
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, filters
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 from accounts.models import Account
 from transactions.models import Transaction
@@ -10,6 +12,9 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['type', 'account', 'category']
+    search_fields = ['description']
 
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
