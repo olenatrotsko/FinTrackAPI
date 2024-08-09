@@ -1,32 +1,24 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:python:.,file:manage.py:.
 version: 2.1
+
 orbs:
   python: circleci/python@2
+
 jobs:
   test-python:
-    # Install dependencies and run tests
     docker:
-      - image: cimg/python:3.8-node
+      - image: cimg/python:3.8-node  
     steps:
-      - checkout
-      - python/install-packages
+      - checkout  # Checkout the code from the repository
+      - python/install-packages:
+          pkg-manager: pip  # Specify pip as the package manager
+      - run:
+          name: Install dependencies
+          command: pip install -r requirements.txt  # Install packages from requirements.txt
       - run:
           name: Run tests
-          command: python manage.py test
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
-      - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          command: python manage.py test  # Run Django tests
+
 workflows:
   build-and-test:
     jobs:
       - test-python
-    # - deploy:
-    #     requires:
-    #       - test-python
