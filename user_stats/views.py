@@ -1,4 +1,7 @@
+from datetime import datetime
 from rest_framework import views, status, response, permissions
+
+from django.utils import timezone
 
 from categories.models import Category
 from transactions.models import Transaction
@@ -21,12 +24,43 @@ class TransactionByCategoryView(views.APIView):
                 data[category.name] = {"amount": self.get_amount_of_transactions_by_category(category, transactions)}
             return data
     
+    def get_start_and_end_date(self, request):
+            start_date = request.query_params.get("start_date")
+            end_date = request.query_params.get("end_date")
+            try:
+                if start_date and end_date:
+                    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+                    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+                    
+                    tz = timezone.get_current_timezone()
+                    start_date = start_date.replace(tzinfo=tz)
+                    end_date = end_date.replace(tzinfo=tz)
+                else:
+                    return None, None
+            except ValueError as e:
+                raise ValueError("Invalid date format. Use YYYY-MM-DD")
+
+            return start_date, end_date
+    
 
 class ExpenseCategoryView(TransactionByCategoryView):
                    
         def get(self, request):
             categories = self.get_categories_by_user_and_type(request.user, "expense")
-            expenses = Transaction.objects.filter(user=request.user, category__in=categories).all()
+            try:
+                start_date, end_date = self.get_start_and_end_date(request)
+            except ValueError as e:
+                return response.Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if start_date and end_date:
+                expenses = Transaction.objects.filter(
+                    user=request.user, 
+                    category__in=categories, 
+                    created_at__gte=start_date,
+                    created_at__lte=end_date
+                    ).all()
+            else:
+                expenses = Transaction.objects.filter(user=request.user, category__in=categories).all()
             data = self.get_dict_with_categories_and_amounts(categories, expenses)
             return response.Response({"expense_category_data": data}, status=status.HTTP_200_OK)
         
@@ -35,7 +69,21 @@ class IncomeCategoryView(TransactionByCategoryView):
                    
         def get(self, request):
             categories = self.get_categories_by_user_and_type(request.user, "income")
-            incomes = Transaction.objects.filter(user=request.user, category__in=categories).all()
+            
+            try:
+                start_date, end_date = self.get_start_and_end_date(request)
+            except ValueError as e:
+                return response.Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if start_date and end_date:
+                incomes = Transaction.objects.filter(
+                    user=request.user, 
+                    category__in=categories, 
+                    created_at__gte=start_date,
+                    created_at__lte=end_date
+                    ).all()
+            else:
+                incomes = Transaction.objects.filter(user=request.user, category__in=categories).all()
             data = self.get_dict_with_categories_and_amounts(categories, incomes)
             return response.Response({"income_category_data": data}, status=status.HTTP_200_OK)   
 
